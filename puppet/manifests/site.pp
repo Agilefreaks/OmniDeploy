@@ -2,25 +2,53 @@ package { "vim":
   ensure => latest
 }
 
-package { "git":
+ackage { "git":
   ensure => latest
 }
 
-node /rubystagingexample\d./ {
+node /apistaging\d./ {
   class { 'freaks::web':
-    gemset => 'staging',
-    app_name => 'staging'
+    gemset => 'omniapi',
+    app_name => 'omniapi'
   }
 }
 
-node /rubyproductionexample\d./ {
+node /apiproduction\d./ {
   class { 'freaks::web':
-    gemset => 'production',
-    app_name => 'production'
+    gemset => 'omniapi',
+    app_name => 'omniapi'
   }
 }
 
-node /^mongo\d.$/ {
+node /webstaging\d./ {
+  class { 'freaks::web':
+    gemset => 'webomni',
+    app_name => 'webomni'
+  }  
+}
+
+node /webproduction\d./ {
+  class { 'freaks::web':
+    gemset => 'webomni',
+    app_name => 'webomni'
+  }    
+}
+
+node /syncstaging\d./ {
+  class { 'freaks::sync':
+    gemset => 'omnisync',
+    app_name => 'omnisync'
+  }
+}
+
+node /syncproduction\d./ {
+  class { 'freaks::sync':
+    gemset => 'omnisync',
+    app_name => 'omnisync'
+  }
+}
+
+node /^mongo[0-2]$/ {
   class { 'freaks::mongo': }
 }
 
