@@ -1,0 +1,134 @@
+global 
+  log 127.0.0.1 local0 notice 
+  maxconn 50000
+  daemon 
+  stats socket /tmp/proxystats level admin
+  tune.ssl.default-dh-param 2048
+defaults
+  log global 
+  mode http 
+  option httplog 
+  option dontlognull 
+  stats enable 
+  stats uri /proxystats   
+  stats auth admin.proxy:zxcv9000x
+  stats refresh 5s 
+  option redispatch
+  option forwardfor
+  option http-server-close
+  timeout connect 5s
+  timeout client 50s
+  timeout server 50s
+  timeout client-fin 30s
+  timeout tunnel 1h
+
+frontend http
+  bind *:80
+  acl is_apexdomain hdr(host) -i <%= domain_name %>
+  acl is_webproduction hdr(host) -i www.<%= domain_name %>
+  acl is_webproduction hdr(host) -i web.<%= domain_name %>
+  acl is_apiproduction hdr(host) -i api.<%= domain_name %>
+  acl is_syncproduction hdr(host) -i sync.<%= domain_name %>
+  acl is_webstaging hdr(host) -i webstaging.<%= domain_name %>
+  acl is_apistaging hdr(host) -i apistaging.<%= domain_name %>
+  acl is_syncstaging hdr(host) -i syncstaging.<%= domain_name %>
+  redirect location https://www.<%= domain_name %> if is_apexdomain
+  redirect location https://www.<%= domain_name %> if is_webproduction
+  redirect location https://api.<%= domain_name %> if is_apiproduction
+  redirect location https://sync.<%= domain_name %> if is_syncproduction
+  redirect location https://webstaging.<%= domain_name %> if is_webstaging
+  redirect location https://apistaging.<%= domain_name %> if is_apistaging
+  redirect location https://syncstaging.<%= domain_name %> if is_syncstaging
+
+frontend https
+  bind *:443 ssl crt /etc/omnipasteapp.com.pem
+  reqadd X-Forwarded-Proto:\ https
+  acl is_apexdomain hdr(host) -i <%= domain_name %>
+  acl is_webproduction hdr(host) -i www.<%= domain_name %>
+  acl is_apiproduction hdr(host) -i api.<%= domain_name %>
+  acl is_syncproduction hdr(host) -i sync.<%= domain_name %>
+  acl is_webstaging hdr(host) -i webstaging.<%= domain_name %>
+  acl is_apistaging hdr(host) -i apistaging.<%= domain_name %>
+  acl is_syncstaging hdr(host) -i syncstaging.<%= domain_name %>
+  <%- syncprod_records.each do |r| -%>
+  acl is_syncproduction<%= r[:name][-2..-1] %> hdr_reg(ws-synctoken) ^<%= r[:name][-2..-1] %>
+  <%- end -%>
+  <%- syncstaging_records.each do |r| -%>
+  acl is_syncstaging<%= r[:name][-2..-1] %> hdr_reg(ws-synctoken) ^<%= r[:name][-2..-1] %>
+  <%- end -%>
+  redirect location https://www.<%= domain_name %> if is_apexdomain
+  use_backend webproduction if is_webproduction
+  use_backend apiproduction if is_apiproduction
+  <%- syncprod_records.each do |r| -%>
+  use_backend syncproduction<%= r[:name][-2..-1] %> if is_syncproduction<%= r[:name][-2..-1] %> is_syncproduction
+  <%- end -%>
+  use_backend syncproduction if is_syncproduction
+  use_backend webstaging if is_webstaging
+  use_backend apistaging if is_apistaging
+  <%- syncstaging_records.each do |r| -%>
+  use_backend syncstaging<%= r[:name][-2..-1] %> if is_syncstaging<%= r[:name][-2..-1] %> is_syncstaging
+  <%- end -%>
+  use_backend syncstaging if is_syncstaging
+
+backend apiproduction
+  mode http
+  balance roundrobin
+  option httpchk HEAD /api/v1/version
+  <%- apiprod_records.each do |r| -%>
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+  <%- end -%>
+
+backend webproduction
+  mode http
+  balance roundrobin
+  option httpchk HEAD /
+  <%- webprod_records.each do |r| -%>
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+  <%- end -%>
+
+backend syncproduction
+  mode http
+  balance roundrobin
+  option httpchk HEAD /api/v1/version
+  <%- syncprod_records.each do |r| -%>
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+  <%- end -%>
+
+<% syncprod_records.each do |r| %>
+backend syncproduction<%= r[:name][-2..-1] %>
+  mode http
+  option httpchk HEAD /api/v1/version
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+<%- end -%>
+
+backend apistaging
+  mode http
+  balance roundrobin
+  option httpchk HEAD /api/v1/version
+  <%- apistaging_records.each do |r| -%>
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+  <%- end -%>
+
+backend webstaging
+  mode http
+  balance roundrobin
+  option httpchk HEAD /
+  <%- webstaging_records.each do |r| -%>
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+  <%- end -%>
+
+backend syncstaging
+  mode http
+  balance roundrobin
+  option httpchk HEAD /api/v1/version
+  <%- syncstaging_records.each do |r| -%>
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+  <%- end -%>
+
+<% syncstaging_records.each do |r| %>
+backend syncstaging<%= r[:name][-2..-1] %>
+  mode http
+  option httpchk HEAD /api/v1/version
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+<%- end -%>
+

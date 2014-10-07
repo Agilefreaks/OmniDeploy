@@ -1,0 +1,121 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'fog'
+require 'erb'
+
+machine = ARGV[0] or abort "ERROR: please provide machine name."
+command = ARGV[1] or abort "ERROR: please provide up/down action."
+
+domain_name = 'omnipasteapp.com'
+lb_regex    = '^lb\d\d'
+apiprod_regex   = '^apiproduction\d\d'
+webprod_regex   = '^webproduction\d\d'
+syncprod_regex  = '^syncproduction\d\d'
+apistaging_regex   = '^apistaging\d\d'
+webstaging_regex   = '^webstaging\d\d'
+syncstaging_regex  = '^syncstaging\d\d'
+
+
+if command == 'up'
+  if machine.match(lb_regex)
+    ipaddr = `vagrant ssh #{machine} -c "ifconfig eth0 | head -2 | tail -1 | tr -s ' ' | tr ' ' ':' | cut -f4 -d':' 2>/dev/null"`
+  else
+    ipaddr = `vagrant ssh #{machine} -c "ifconfig eth1 | head -2 | tail -1 | tr -s ' ' | tr ' ' ':' | cut -f4 -d':' 2>/dev/null"`
+  end
+  ipaddr == '' and abort "ERROR: could not detect IP address for specified machine"
+end
+
+dns_provider = Fog::DNS.new({ 
+  :provider => 'DNSimple', 
+  :dnsimple_email => ENV['DNSIMPLE_USERNAME'], 
+  :dnsimple_token => ENV['DNSIMPLE_TOKEN']
+  })
+
+# get a reference to our DNS zone
+zone = dns_provider.zones.get(domain_name) or abort "ERROR: zone #{domain_name} not found."
+
+# once in a lifetime, on a new domain, we must point www, api & sync to apex domain
+www_record = zone.records.detect{ |r| r.name == 'www' && r.type == 'CNAME' && r.value == domain_name }
+if ! www_record
+  puts 'INFO: creating new www endpoint in DNS. once in a lifetime, baby!'
+  zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'www', :value => domain_name)
+end
+api_record = zone.records.detect{ |r| r.name == 'api' && r.type == 'CNAME' && r.value == domain_name }
+if ! api_record
+  puts 'INFO: creating new api endpoint in DNS. once in a lifetime, baby!'
+  zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'api', :value => domain_name)
+end
+sync_record = zone.records.detect{ |r| r.name == 'sync' && r.type == 'CNAME' && r.value == domain_name }
+if ! sync_record
+  puts 'INFO: creating new sync endpoint in DNS. once in a lifetime, baby!'
+  zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'sync', :value => domain_name)
+end
+webstaging_record = zone.records.detect{ |r| r.name == 'webstaging' && r.type == 'CNAME' && r.value == domain_name }
+if ! webstaging_record
+  puts 'INFO: creating new webstaging endpoint in DNS. once in a lifetime, baby!'
+  zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'webstaging', :value => domain_name)
+end
+apistaging_record = zone.records.detect{ |r| r.name == 'apistaging' && r.type == 'CNAME' && r.value == domain_name }
+if ! apistaging_record
+  puts 'INFO: creating new apistaging endpoint in DNS. once in a lifetime, baby!'
+  zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'apistaging', :value => domain_name)
+end
+syncstaging_record = zone.records.detect{ |r| r.name == 'syncstaging' && r.type == 'CNAME' && r.value == domain_name }
+if ! syncstaging_record
+  puts 'INFO: creating new syncstagin endpoint in DNS. once in a lifetime, baby!'
+  zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'syncstaging', :value => domain_name)
+end
+
+record = zone.records.detect{ |r| r.name == machine }
+apex_record = zone.records.detect{ |r| r.name == '' && r.type == 'POOL' && r.value == "#{machine}.#{domain_name}" }
+case command
+when 'up'
+  if record
+    puts 'INFO: updating existing DNS record.'
+    record.value=ipaddr
+    record.save
+  else
+    puts 'INFO: creating new DNS record.'
+    zone.records.create(:type => 'A', :ttl => '30', :name => machine, :value => ipaddr)
+  end
+  if (!apex_record) && (machine.match(lb_regex))
+    puts 'INFO: creating new apex record in DNS.'
+    zone.records.create(:type => 'POOL', :ttl => '30', :name => '', :value => "#{machine}.#{domain_name}")
+  end
+when 'down'
+  if record
+    if machine.match(lb_regex)
+      lb_records = zone.records.all.select{ |r| r.value if r.name.match(lb_regex) }
+      lb_records.size == 1 and abort "ERROR: refusing to remove DNS record for the only load balancer."
+    end
+    puts 'INFO: deleting DNS record.'
+    record.destroy
+  else
+    puts "WARNING: DNS record for #{machine} was not found so it could not be deleted."
+  end
+  if apex_record
+    puts 'INFO: deleting apex record from DNS.'
+    apex_record.destroy
+  else
+    puts "WARNING: apex record in DNS for #{machine} was not found so it could not be deleted." if machine.match(lb_regex)
+  end
+end
+
+zone.records.reload
+
+# get all records matching a specific regex
+apiprod_records = zone.records.all.select{ |r| r.value if r.name.match(apiprod_regex) }.map{ |r| { :name => r.name, :value => r.value } }
+webprod_records = zone.records.all.select{ |r| r.value if r.name.match(webprod_regex) }.map{ |r| { :name => r.name, :value => r.value } }
+syncprod_records = zone.records.all.select{ |r| r.value if r.name.match(syncprod_regex) }.map{ |r| { :name => r.name, :value => r.value } }
+apistaging_records = zone.records.all.select{ |r| r.value if r.name.match(apistaging_regex) }.map{ |r| { :name => r.name, :value => r.value } }
+webstaging_records = zone.records.all.select{ |r| r.value if r.name.match(webstaging_regex) }.map{ |r| { :name => r.name, :value => r.value } }
+syncstaging_records = zone.records.all.select{ |r| r.value if r.name.match(syncstaging_regex) }.map{ |r| { :name => r.name, :value => r.value } }
+
+puts 'INFO: regenerating haproxy.cfg'
+template = ERB.new(File.read("scripts/haproxy.cfg.erb"), 0, '-')
+haproxy_conf = template.result(binding)
+File.open("scripts/haproxy.cfg", "w") do |file|
+  file.puts haproxy_conf
+end 
+

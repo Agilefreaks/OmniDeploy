@@ -1,0 +1,25 @@
+#!/bin/bash
+
+vagrant ssh-config > /tmp/$$-ssh-config 2>/dev/null
+
+for machine in $(vagrant status | grep -E '^lb.*(active|running)' | awk '{ print $1 }' | tr "\\n" " ") 
+do
+  echo "flushing arp entries on $machine"
+  vagrant ssh $machine -c 'sudo ip neigh flush dev eth1'
+  echo "copying SSL cert to $machine"
+  scp -F /tmp/$$-ssh-config certs/omnipasteapp.com.pem $machine: >/dev/null || exit 128
+  echo "copying haproxy config to $machine"
+  scp -F /tmp/$$-ssh-config scripts/haproxy.cfg $machine: >/dev/null || exit 128
+  echo "moving SSL cert to /etc on $machine"
+  vagrant ssh $machine -c 'sudo mv -f omnipasteapp.com.pem /etc/omnipasteapp.com.pem' || exit 128
+  echo "moving haproxy config to /etc on $machine"
+  vagrant ssh $machine -c 'sudo mv -f haproxy.cfg /etc/haproxy/haproxy.cfg' || exit 128
+  echo "restarting haproxy on $machine"
+  vagrant ssh $machine -c 'sudo service haproxy restart > /dev/null' || exit 128
+done
+
+rm /tmp/$$-ssh-config
+
+echo "done"
+
+exit

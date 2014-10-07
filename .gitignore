@@ -6,3 +6,10 @@
 
 # Vagrant machines
 .vagrant
+
+# Certs
+certs/*
+
+# Generated haproxy config
+scripts/haproxy.cfg
+
