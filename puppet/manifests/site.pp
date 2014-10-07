@@ -2,7 +2,7 @@ package { "vim":
   ensure => latest
 }
 
-ackage { "git":
+package { "git":
   ensure => latest
 }
 
