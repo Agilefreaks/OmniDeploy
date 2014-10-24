@@ -49,6 +49,11 @@ class freaks::haproxy {
   package { 'haproxy':
     ensure => latest
   }
+
+  class { 'newrelic':
+    license_key => $::newrelic_license_key,
+    use_latest  => true
+  }
 }
 
 class freaks::admin (
