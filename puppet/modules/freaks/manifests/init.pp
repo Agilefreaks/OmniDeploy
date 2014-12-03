@@ -25,8 +25,22 @@ class freaks::web (
     app_name => $app_name,
     deploy_to => $deploy_to,
   }
-
 }
+
+class freaks::sync (
+    $gemset = 'freaks',
+    $app_name = 'freaks'
+  ) {
+  class { 'freaks::web_base':
+    gemset => $gemset,
+    app_name => $app_name
+  }->
+  class { 'freaks::nginx::websocket':
+    app_name => $app_name,
+    deploy_to => $deploy_to,
+  }
+}
+
 class freaks::mongo {
   class { 'newrelic':
     license_key => $::newrelic_license_key,
