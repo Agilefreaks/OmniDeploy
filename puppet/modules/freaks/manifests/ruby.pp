@@ -2,9 +2,7 @@ class freaks::ruby (
     $gemset = 'freaks',
     $user = 'deploy'
   ) {
-  class { 'rvm':
-    version => $rvm_version
-  }->
+  class { 'rvm': }->
   rvm_system_ruby { $ruby_version:
     ensure      => present,
     default_use => true
