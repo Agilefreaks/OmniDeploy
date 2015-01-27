@@ -10,3 +10,4 @@
 # Generated haproxy config
 scripts/haproxy.cfg
 
+/.project
