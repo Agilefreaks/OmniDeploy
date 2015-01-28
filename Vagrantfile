@@ -14,7 +14,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     override.ssh.private_key_path = "~/.ssh/id_rsa"
 
     digital.token                = ENV['DIGITAL_OCEAN_TOKEN']
-    digital.image                = "Ubuntu 14.04 x64"
+    digital.image                = "Ubuntu-14.04-x64"
     digital.region               = "ams3"
     digital.size                 = "512MB"
     digital.private_networking   = "true"
