@@ -67,6 +67,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   3.times { |i| define_machine.call("mongo#{i}") }
 
+  1.times { |i| define_machine.call("redis#{i}") }
+
+  1.times { |i| define_machine.call("sidekiqproduction#{i}") }
+
+  1.times { |i| define_machine.call("sidekiqstaging#{i}") }
+
   config.vm.define 'admin' do |machine|
     machine.vm.hostname = 'admin'
   end

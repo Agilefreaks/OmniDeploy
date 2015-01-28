@@ -1,11 +1,15 @@
+class freask::newrelic {
+  class { 'newrelic':
+    license_key => $::newrelic_license_key,
+    use_latest  => true
+  }  
+}
+
 class freaks::web_base (
     $gemset = 'freaks',
     $app_name = 'freaks'
   ) {
-  class { 'newrelic':
-    license_key => $::newrelic_license_key,
-    use_latest  => true
-  }
+  class { 'freaks::newrelic' }
 
   class { 'freaks::user': }->
   class { 'freaks::ruby':
@@ -42,10 +46,7 @@ class freaks::sync (
 }
 
 class freaks::mongo {
-  class { 'newrelic':
-    license_key => $::newrelic_license_key,
-    use_latest  => true
-  }
+  class { 'freaks::newrelic' }
 
   class { 'mongodb::globals':
     manage_package_repo => true,
@@ -55,6 +56,12 @@ class freaks::mongo {
     replset    => 'rsfreaks'
   }->
   class { 'mongodb::client': }
+}
+
+class freaks::redis {
+  class { 'freaks::newrelic' }
+
+  class { 'freaks::redis_server' }  
 }
 
 class freaks::haproxy {

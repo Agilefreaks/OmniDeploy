@@ -48,8 +48,24 @@ node /syncproduction\d./ {
   }
 }
 
+node /sidekiqproduction\d./ {
+  class { 'freaks::ruby':
+    gemset => 'omnisidekiq'
+  }
+}
+
+node /sidekiqstaging\d./ {
+  class { 'freaks::ruby':
+    gemset => 'omnisidekiq'
+  }
+}
+
 node /^mongo[0-2]$/ {
   class { 'freaks::mongo': }
+}
+
+node /^redis[0-2]$/ {
+  class { 'freaks::redis': }
 }
 
 node /lb\d./ {
