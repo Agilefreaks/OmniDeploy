@@ -1,4 +1,4 @@
-class freask::newrelic {
+class freaks::newrelic {
   class { 'newrelic':
     license_key => $::newrelic_license_key,
     use_latest  => true
@@ -71,20 +71,14 @@ class freaks::haproxy {
     ensure => latest
   }
 
-  class { 'newrelic':
-    license_key => $::newrelic_license_key,
-    use_latest  => true
-  }
+  class { 'freaks::newrelic': }
 }
 
 class freaks::admin (
   $gemset = 'admin'
   ) {  
-  class { 'newrelic':
-    license_key => $::newrelic_license_key,
-    use_latest  => true
-  }
-  
+  class { 'freaks::newrelic': }
+
   class { 'rvm':
     version => $::rvm_version
   }->
