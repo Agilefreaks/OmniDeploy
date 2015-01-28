@@ -22,7 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     digital.domain               = 'omnipasteapp.com'
   end
 
-  config.trigger.after [ :up, :resume, :provision ], :stdout => true, :vm => /^((?!mongo).)*$/ do
+  config.trigger.after [ :up, :resume, :provision ], :stdout => true, :vm => /^((?!mongo|redis|sidekiq).)*$/ do
     info 'Update infrastructure'
     run "scripts/update_infra #{@machine.name} up"
     info 'Reinitialize LBs'
@@ -34,7 +34,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     run "scripts/update_infra #{@machine.name} down"
   end
 
-  config.trigger.before [ :destroy, :suspend, :halt ], :stdout => true, :vm => /^((?!mongo|lb).)*$/ do
+  config.trigger.before [ :destroy, :suspend, :halt ], :stdout => true, :vm => /^((?!mongo|lb|redis|sidekiq).)*$/ do
     info 'Update infrastructure'
     run "scripts/update_infra #{@machine.name} down"
     info 'Reinitialize LBs'
