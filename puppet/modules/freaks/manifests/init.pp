@@ -58,7 +58,7 @@ class freaks::mongo {
   class { 'mongodb::client': }
 }
 
-class freaks::redis_servers {
+class freaks::redis_server {
   class { 'freaks::newrelic_base': }
 
   class { 'redis': version => $required_redis_version }->
