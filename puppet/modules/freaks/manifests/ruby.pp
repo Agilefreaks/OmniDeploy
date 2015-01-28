@@ -7,7 +7,7 @@ class freaks::ruby (
     ensure      => present,
     default_use => true
   }->
-  rvm_gemset { "$ruby_version@$gemset":
+  rvm_gemset { "$requiered_ruby_version@$gemset":
     ensure  => present
   }->
   rvm::system_user { "$user": }
