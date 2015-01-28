@@ -1,4 +1,4 @@
-class freaks::newrelic {
+class freaks::newrelic_base {
   class { 'newrelic':
     license_key => $::newrelic_license_key,
     use_latest  => true
@@ -9,7 +9,7 @@ class freaks::web_base (
     $gemset = 'freaks',
     $app_name = 'freaks'
   ) {
-  class { 'freaks::newrelic': }
+  class { 'freaks::newrelic_base': }
 
   class { 'freaks::user': }->
   class { 'freaks::ruby':
@@ -46,7 +46,7 @@ class freaks::sync (
 }
 
 class freaks::mongo {
-  class { 'freaks::newrelic': }
+  class { 'freaks::newrelic_base': }
 
   class { 'mongodb::globals':
     manage_package_repo => true,
@@ -59,7 +59,7 @@ class freaks::mongo {
 }
 
 class freaks::redis {
-  class { 'freaks::newrelic': }
+  class { 'freaks::newrelic_base': }
 
   class { 'freaks::redis_server': }  
 }
@@ -71,13 +71,13 @@ class freaks::haproxy {
     ensure => latest
   }
 
-  class { 'freaks::newrelic': }
+  class { 'freaks::newrelic_base': }
 }
 
 class freaks::admin (
   $gemset = 'admin'
   ) {  
-  class { 'freaks::newrelic': }
+  class { 'freaks::newrelic_base': }
 
   class { 'rvm':
     version => $::rvm_version
