@@ -65,7 +65,7 @@ node /^mongo[0-2]$/ {
 }
 
 node /^redis[0-2]$/ {
-  class { 'freaks::redis': }
+  class { 'freaks::redis_server': }
 }
 
 node /lb\d./ {
