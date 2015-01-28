@@ -9,7 +9,7 @@ class freaks::web_base (
     $gemset = 'freaks',
     $app_name = 'freaks'
   ) {
-  class { 'freaks::newrelic' }
+  class { 'freaks::newrelic': }
 
   class { 'freaks::user': }->
   class { 'freaks::ruby':
@@ -46,7 +46,7 @@ class freaks::sync (
 }
 
 class freaks::mongo {
-  class { 'freaks::newrelic' }
+  class { 'freaks::newrelic': }
 
   class { 'mongodb::globals':
     manage_package_repo => true,
@@ -59,9 +59,9 @@ class freaks::mongo {
 }
 
 class freaks::redis {
-  class { 'freaks::newrelic' }
+  class { 'freaks::newrelic': }
 
-  class { 'freaks::redis_server' }  
+  class { 'freaks::redis_server': }  
 }
 
 class freaks::haproxy {
