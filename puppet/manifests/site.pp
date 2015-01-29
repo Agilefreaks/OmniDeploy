@@ -56,7 +56,7 @@ node /sidekiqproduction\d./ {
 
 node /sidekiqstaging\d./ {
   class { 'freaks::ruby':
-    gemset => 'omnisidekiq'
+    gemset => 'omnikiq'
   }
 }
 
