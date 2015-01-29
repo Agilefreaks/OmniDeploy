@@ -49,15 +49,11 @@ node /syncproduction\d./ {
 }
 
 node /sidekiqproduction\d./ {
-  class { 'freaks::ruby':
-    gemset => 'omnikiq'
-  }
+  class { 'freaks::omnikiq': }
 }
 
 node /sidekiqstaging\d./ {
-  class { 'freaks::ruby':
-    gemset => 'omnikiq'
-  }
+  class { 'freaks::omnikiq': }
 }
 
 node /^mongo[0-2]$/ {

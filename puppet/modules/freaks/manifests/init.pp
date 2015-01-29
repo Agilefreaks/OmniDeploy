@@ -78,6 +78,14 @@ class freaks::haproxy {
   class { 'freaks::newrelic_base': }
 }
 
+class freaks::omnikiq {
+  class { 'freaks::newrelic_base': }
+
+  class { 'freaks::ruby':
+    gemset => 'omnikiq'
+  }
+}
+
 class freaks::admin (
   $gemset = 'admin'
   ) {  
