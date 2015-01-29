@@ -52,7 +52,7 @@ class freaks::mongo {
     manage_package_repo => true,
   }->
   class { 'mongodb::server': 
-    bind_ip => ['127.0.0.1',"$ipaddress_eth0"],
+    bind_ip => ['127.0.0.1',"$ipaddress_eth1"],
     replset    => 'rsfreaks'
   }->
   class { 'mongodb::client': }
@@ -63,7 +63,7 @@ class freaks::redis_server {
 
   class { 'redis':
     port => '6379',   
-    bind => ['127.0.0.1',"$ipaddress_eth0"],
+    bind => "127.0.0.1 $ipaddress_eth1",
     maxmemory   => '400000000',
   }
 }
