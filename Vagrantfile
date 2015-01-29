@@ -69,9 +69,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   1.times { |i| define_machine.call("redis#{i}") }
 
-  1.times { |i| define_machine.call("sidekiqproduction#{i}") }
+  1.times { |i| define_machine.call("sidekiqproduction#0{i + 1}") }
 
-  1.times { |i| define_machine.call("sidekiqstaging#{i}") }
+  1.times { |i| define_machine.call("sidekiqstaging#0{i + 1}") }
 
   config.vm.define 'admin' do |machine|
     machine.vm.hostname = 'admin'
