@@ -50,7 +50,7 @@ node /syncproduction\d./ {
 
 node /sidekiqproduction\d./ {
   class { 'freaks::ruby':
-    gemset => 'omnisidekiq'
+    gemset => 'omnikiq'
   }
 }
 
