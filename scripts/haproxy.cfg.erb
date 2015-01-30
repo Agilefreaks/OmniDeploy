@@ -14,7 +14,7 @@ defaults
   stats auth admin.proxy:zxcv9000x
   stats refresh 5s 
   option redispatch
-  option forwardfor
+  option forwardfor<% end -%>
   option http-server-close
   timeout connect 5s
   timeout client 50s
@@ -29,9 +29,11 @@ frontend http
   acl is_webproduction hdr(host) -i web.<%= domain_name %>
   acl is_apiproduction hdr(host) -i api.<%= domain_name %>
   acl is_syncproduction hdr(host) -i sync.<%= domain_name %>
+  acl is_omnikiqproduction hdr(host) -i omnikiq.<%= domain_name %>
   acl is_webstaging hdr(host) -i webstaging.<%= domain_name %>
   acl is_apistaging hdr(host) -i apistaging.<%= domain_name %>
   acl is_syncstaging hdr(host) -i syncstaging.<%= domain_name %>
+  acl is_omnikiqstaging hdr(host) -i omnikiqstaging.<%= domain_name %>
   redirect location https://www.<%= domain_name %> if is_apexdomain
   redirect location https://www.<%= domain_name %> if is_webproduction
   redirect location https://api.<%= domain_name %> if is_apiproduction
@@ -39,6 +41,7 @@ frontend http
   redirect location https://webstaging.<%= domain_name %> if is_webstaging
   redirect location https://apistaging.<%= domain_name %> if is_apistaging
   redirect location https://syncstaging.<%= domain_name %> if is_syncstaging
+  redirect location https://omnikiqstaging.<%= domain_name %> if is_omnikiqstaging
 
 frontend https
   bind *:443 ssl crt /etc/omnipasteapp.com.pem
@@ -47,9 +50,11 @@ frontend https
   acl is_webproduction hdr(host) -i www.<%= domain_name %>
   acl is_apiproduction hdr(host) -i api.<%= domain_name %>
   acl is_syncproduction hdr(host) -i sync.<%= domain_name %>
+  acl is_omnikiqproduction hdr(host) -i omnikiq.<%= domain_name %>
   acl is_webstaging hdr(host) -i webstaging.<%= domain_name %>
   acl is_apistaging hdr(host) -i apistaging.<%= domain_name %>
   acl is_syncstaging hdr(host) -i syncstaging.<%= domain_name %>
+  acl is_omnikiqstaging hdr(host) -i omnikiqstaging.<%= domain_name %>
   <%- syncprod_records.each do |r| -%>
   acl is_syncproduction<%= r[:name][-2..-1] %> hdr_reg(ws-synctoken) ^<%= r[:name][-2..-1] %>
   <%- end -%>
@@ -59,12 +64,14 @@ frontend https
   redirect location https://www.<%= domain_name %> if is_apexdomain
   use_backend webproduction if is_webproduction
   use_backend apiproduction if is_apiproduction
+  use_backend omnikiqproduction if is_omnikiqproduction
   <%- syncprod_records.each do |r| -%>
   use_backend syncproduction<%= r[:name][-2..-1] %> if is_syncproduction<%= r[:name][-2..-1] %> is_syncproduction
   <%- end -%>
   use_backend syncproduction if is_syncproduction
   use_backend webstaging if is_webstaging
   use_backend apistaging if is_apistaging
+  use_backend omnikiqstaging if is_omnikiqstaging
   <%- syncstaging_records.each do |r| -%>
   use_backend syncstaging<%= r[:name][-2..-1] %> if is_syncstaging<%= r[:name][-2..-1] %> is_syncstaging
   <%- end -%>
@@ -83,6 +90,14 @@ backend webproduction
   balance roundrobin
   option httpchk HEAD /
   <%- webprod_records.each do |r| -%>
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+  <%- end -%>
+
+backend omnikiqproduction
+  mode http
+  balance roundrobin
+  option httpchk HEAD /
+  <%- omnikiqprod_records.each do |r| -%>
   server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
   <%- end -%>
 
@@ -117,6 +132,14 @@ backend webstaging
   server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
   <%- end -%>
 
+backend omnikiqstaging
+  mode http
+  balance roundrobin
+  option httpchk HEAD /api/v1/version
+  <%- omnikiqstaging_records.each do |r| -%>
+  server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
+  <%- end -%>
+
 backend syncstaging
   mode http
   balance roundrobin
@@ -131,4 +154,3 @@ backend syncstaging<%= r[:name][-2..-1] %>
   option httpchk HEAD /api/v1/version
   server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
 <%- end -%>
-

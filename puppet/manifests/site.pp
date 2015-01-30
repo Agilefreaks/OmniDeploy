@@ -48,11 +48,11 @@ node /syncproduction\d./ {
   }
 }
 
-node /sidekiqproduction\d./ {
+node /omnikiqproduction\d./ {
   class { 'freaks::omnikiq': }
 }
 
-node /sidekiqstaging\d./ {
+node /omnikiqstaging\d./ {
   class { 'freaks::omnikiq': }
 }
 

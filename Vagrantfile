@@ -22,7 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     digital.domain               = 'omnipasteapp.com'
   end
 
-  config.trigger.after [ :up, :resume, :provision ], :stdout => true, :vm => /^((?!mongo|redis|sidekiq).)*$/ do
+  config.trigger.after [ :up, :resume, :provision ], :stdout => true, :vm => /^((?!mongo|redis).)*$/ do
     info 'Update infrastructure'
     run "scripts/update_infra #{@machine.name} up"
     info 'Reinitialize LBs'
@@ -34,7 +34,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     run "scripts/update_infra #{@machine.name} down"
   end
 
-  config.trigger.before [ :destroy, :suspend, :halt ], :stdout => true, :vm => /^((?!mongo|lb|redis|sidekiq).)*$/ do
+  config.trigger.before [ :destroy, :suspend, :halt ], :stdout => true, :vm => /^((?!mongo|lb|redis).)*$/ do
     info 'Update infrastructure'
     run "scripts/update_infra #{@machine.name} down"
     info 'Reinitialize LBs'
@@ -69,9 +69,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   1.times { |i| define_machine.call("redis#{i}") }
 
-  1.times { |i| define_machine.call("sidekiqproduction0#{i + 1}") }
+  1.times { |i| define_machine.call("omnikiqproduction0#{i + 1}") }
 
-  1.times { |i| define_machine.call("sidekiqstaging0#{i + 1}") }
+  1.times { |i| define_machine.call("omnikiqstaging0#{i + 1}") }
 
   config.vm.define 'admin' do |machine|
     machine.vm.hostname = 'admin'

@@ -12,10 +12,11 @@ lb_regex    = '^lb\d\d'
 apiprod_regex   = '^apiproduction\d\d'
 webprod_regex   = '^webproduction\d\d'
 syncprod_regex  = '^syncproduction\d\d'
+omnikiqprod_regex = '^omnikiqproduction\d\d'
 apistaging_regex   = '^apistaging\d\d'
 webstaging_regex   = '^webstaging\d\d'
 syncstaging_regex  = '^syncstaging\d\d'
-
+omnikiqstaging_regex = '^omnikiqstaging\d\d'
 
 if command == 'up'
   if machine.match(lb_regex)
@@ -51,6 +52,11 @@ if ! sync_record
   puts 'INFO: creating new sync endpoint in DNS. once in a lifetime, baby!'
   zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'sync', :value => domain_name)
 end
+omnikiq_record = zone.records.detect{ |r| r.name == 'omnikiq' && r.type == 'CNAME' && r.value == domain_name }
+if ! sync_record
+  puts 'INFO: creating new omnikiq endpoint in DNS. once in a lifetime, baby!'
+  zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'omnikiq', :value => domain_name)
+end
 webstaging_record = zone.records.detect{ |r| r.name == 'webstaging' && r.type == 'CNAME' && r.value == domain_name }
 if ! webstaging_record
   puts 'INFO: creating new webstaging endpoint in DNS. once in a lifetime, baby!'
@@ -63,8 +69,13 @@ if ! apistaging_record
 end
 syncstaging_record = zone.records.detect{ |r| r.name == 'syncstaging' && r.type == 'CNAME' && r.value == domain_name }
 if ! syncstaging_record
-  puts 'INFO: creating new syncstagin endpoint in DNS. once in a lifetime, baby!'
+  puts 'INFO: creating new syncstaging endpoint in DNS. once in a lifetime, baby!'
   zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'syncstaging', :value => domain_name)
+end
+omnikiqstaging_record = zone.records.detect{ |r| r.name == 'omnikiqstaging' && r.type == 'CNAME' && r.value == domain_name }
+if ! omnikiqstaging_record
+  puts 'INFO: creating new omnikiqstaging endpoint in DNS. once in a lifetime, baby!'
+  zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'omnikiqstaging', :value => domain_name)
 end
 
 record = zone.records.detect{ |r| r.name == machine }
@@ -108,9 +119,11 @@ zone.records.reload
 apiprod_records = zone.records.all.select{ |r| r.value if r.name.match(apiprod_regex) }.map{ |r| { :name => r.name, :value => r.value } }
 webprod_records = zone.records.all.select{ |r| r.value if r.name.match(webprod_regex) }.map{ |r| { :name => r.name, :value => r.value } }
 syncprod_records = zone.records.all.select{ |r| r.value if r.name.match(syncprod_regex) }.map{ |r| { :name => r.name, :value => r.value } }
+omnikiqprod_records = zone.records.all.select{ |r| r.value if r.name.match(omnikiqprod_regex) }.map{ |r| { :name => r.name, :value => r.value } }
 apistaging_records = zone.records.all.select{ |r| r.value if r.name.match(apistaging_regex) }.map{ |r| { :name => r.name, :value => r.value } }
 webstaging_records = zone.records.all.select{ |r| r.value if r.name.match(webstaging_regex) }.map{ |r| { :name => r.name, :value => r.value } }
 syncstaging_records = zone.records.all.select{ |r| r.value if r.name.match(syncstaging_regex) }.map{ |r| { :name => r.name, :value => r.value } }
+omnikiqstaging_records = zone.records.all.select{ |r| r.value if r.name.match(omnikiqstaging_regex) }.map{ |r| { :name => r.name, :value => r.value } }
 
 puts 'INFO: regenerating haproxy.cfg'
 template = ERB.new(File.read("scripts/haproxy.cfg.erb"), 0, '-')
@@ -118,4 +131,3 @@ haproxy_conf = template.result(binding)
 File.open("scripts/haproxy.cfg", "w") do |file|
   file.puts haproxy_conf
 end 
-
