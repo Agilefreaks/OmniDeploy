@@ -79,10 +79,9 @@ class freaks::haproxy {
 }
 
 class freaks::omnikiq {
-  class { 'freaks::newrelic_base': }
-
-  class { 'freaks::ruby':
-    gemset => 'omnikiq'
+  class { 'freaks::web':
+    gemset => 'omnikiq',
+    app_name => 'omnikiq'
   }
 }
 
