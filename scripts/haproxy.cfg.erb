@@ -14,7 +14,7 @@ defaults
   stats auth admin.proxy:zxcv9000x
   stats refresh 5s 
   option redispatch
-  option forwardfor<% end -%>
+  option forwardfor
   option http-server-close
   timeout connect 5s
   timeout client 50s
@@ -38,6 +38,7 @@ frontend http
   redirect location https://www.<%= domain_name %> if is_webproduction
   redirect location https://api.<%= domain_name %> if is_apiproduction
   redirect location https://sync.<%= domain_name %> if is_syncproduction
+  redirect location https://omnikiq.<%= domain_name %> if is_omnikiqproduction
   redirect location https://webstaging.<%= domain_name %> if is_webstaging
   redirect location https://apistaging.<%= domain_name %> if is_apistaging
   redirect location https://syncstaging.<%= domain_name %> if is_syncstaging
