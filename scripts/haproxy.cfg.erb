@@ -97,7 +97,7 @@ backend webproduction
 backend omnikiqproduction
   mode http
   balance roundrobin
-  option httpchk HEAD /
+  option httpchk HEAD /ping
   <%- omnikiqprod_records.each do |r| -%>
   server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
   <%- end -%>
@@ -136,7 +136,7 @@ backend webstaging
 backend omnikiqstaging
   mode http
   balance roundrobin
-  option httpchk HEAD /
+  option httpchk HEAD /ping
   <%- omnikiqstaging_records.each do |r| -%>
   server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
   <%- end -%>
