@@ -53,7 +53,7 @@ if ! sync_record
   zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'sync', :value => domain_name)
 end
 omnikiq_record = zone.records.detect{ |r| r.name == 'omnikiq' && r.type == 'CNAME' && r.value == domain_name }
-if ! sync_record
+if ! omnikiq_record
   puts 'INFO: creating new omnikiq endpoint in DNS. once in a lifetime, baby!'
   zone.records.create(:type => 'CNAME', :ttl => '30', :name => 'omnikiq', :value => domain_name)
 end
