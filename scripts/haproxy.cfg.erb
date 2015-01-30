@@ -136,7 +136,7 @@ backend webstaging
 backend omnikiqstaging
   mode http
   balance roundrobin
-  option httpchk HEAD /api/v1/version
+  option httpchk HEAD /
   <%- omnikiqstaging_records.each do |r| -%>
   server <%= r[:name] %> <%= r[:value] %>:80 check inter 5s rise 5 fall 2
   <%- end -%>
