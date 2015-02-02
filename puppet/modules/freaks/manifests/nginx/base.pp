@@ -20,7 +20,7 @@ class freaks::nginx::base (
   }->
 
   class { 'nginx':
-    worker_rlimit_nofile: '16384',
+    worker_rlimit_nofile => '16384'
   }
 
   nginx::resource::upstream { "$app_name":
