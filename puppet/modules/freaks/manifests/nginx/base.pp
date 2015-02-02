@@ -19,7 +19,9 @@ class freaks::nginx::base (
     group  => $group
   }->
 
-  class { 'nginx': }
+  class { 'nginx':
+    worker_rlimit_nofile: '16384',
+  }
 
   nginx::resource::upstream { "$app_name":
     ensure  => present,
