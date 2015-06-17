@@ -25,3 +25,6 @@
 [submodule "puppet/modules/redis"]
 	path = puppet/modules/redis
 	url = git@github.com:arioch/puppet-redis.git
+[submodule "puppet/modules/systemenv"]
+	path = puppet/modules/systemenv
+	url = git@github.com:nvalentine-puppetlabs/puppet-systemenv.git
