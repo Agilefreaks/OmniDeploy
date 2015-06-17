@@ -28,3 +28,6 @@
 [submodule "puppet/modules/systemenv"]
 	path = puppet/modules/systemenv
 	url = git@github.com:nvalentine-puppetlabs/puppet-systemenv.git
+[submodule "puppet/modules/inifile"]
+	path = puppet/modules/inifile
+	url = git@github.com:puppetlabs/puppetlabs-inifile.git
